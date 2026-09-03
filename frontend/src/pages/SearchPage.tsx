@@ -10,7 +10,7 @@ function SearchPage() {
   
   const searchTxt = (event: React.ChangeEvent<HTMLInputElement>) =>{
     setStrSearch(event.target.value);
-    console.log(event.target.value);
+    //console.log(event.target.value);
   };
 
   const runSearch = () =>{
@@ -49,7 +49,7 @@ function SearchPage() {
         {Result.map((movie) => {
             const imageUrl = `https://image.tmdb.org/t/p/w300${movie.poster_path}`;
             return(
-            <Link to={`/movie/${movie.id}`}>
+            <Link to={`/movie/${movie.id}`} key={movie.id}>
               <div>
                 title={movie.title}<br />
                 <img src={imageUrl} alt={movie.title} /><br />
