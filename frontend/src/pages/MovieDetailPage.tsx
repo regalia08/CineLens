@@ -31,9 +31,20 @@ function MovieDetailPage() {
         rating: strRating,
       }),
     });
-    console.log(result);
+    //console.log(result);
 
   }
+
+  useEffect(() => {
+    async function checkExisting() {
+      const watchedList = await apiRequest('/api/watched-movies');
+      const existing = watchedList.find((item) => item.movieId === parseInt(params.id ?? '0'));
+      if (existing) {
+        setRating(existing.rating);
+      }
+    }
+    checkExisting();
+  }, [params.id]);
 
   const searchTxt = (event: React.ChangeEvent<HTMLInputElement>) =>{
     setRating(parseFloat(event.target.value));
@@ -48,7 +59,7 @@ function MovieDetailPage() {
             {movieDetail?.title}<br />
             <img src={`https://image.tmdb.org/t/p/w300${movieDetail?.poster_path}`} alt={movieDetail?.title} /><br />
             {movieDetail?.overview}<br /><br />
-            <input type="number" min="0" max="5" step="0.5" onChange={searchTxt}></input>
+            <input type="number" min="0" max="5" step="0.5" onChange={searchTxt} value={strRating}></input>
             <button onClick={addView}>Viewed</button>
           </div>
 
