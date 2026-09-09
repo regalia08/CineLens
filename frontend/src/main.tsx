@@ -7,6 +7,7 @@ import Home from "./pages/HomePage";
 import MyPage from "./pages/MyPage";
 import Search from "./pages/SearchPage";
 import MovieDetail from "./pages/MovieDetailPage";
+import Recommend from "./pages/RecommendationPage.tsx";
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -17,6 +18,7 @@ createRoot(document.getElementById('root')!).render(
 		  <Route path="search" element={<Search />} />
 		  <Route path="mypage" element={<MyPage />} />
 		  <Route path="movie/:id" element={<MovieDetail />} />
+		  <Route path="recomm" element={<Recommend />} />
 		</Route>
 	  </Routes>
 	</BrowserRouter>

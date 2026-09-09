@@ -21,6 +21,9 @@ function App() {
           <li>
             <Link to="/mypage">마이페이지</Link>
           </li>
+          <li>
+            <Link to="/recomm">추천페이지</Link>
+          </li>
         </ul>
       </nav>
 

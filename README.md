@@ -67,7 +67,7 @@ CineLens/
 
 ### Frontend
 - [x] Vite + React + TypeScript 프로젝트 세팅
-- [x] React Router 기반 라우팅 (`/`, `/search`, `/movie/:id`, `/mypage`)
+- [x] React Router 기반 라우팅 (`/`, `/search`, `/movie/:id`, `/mypage`, `/recomm`)
 - [x] 익명 사용자 ID 로직 (UUID + localStorage)
 - [x] 인기 영화 목록 (홈)
 - [x] 영화 검색 (입력, 버튼, 엔터키)
@@ -77,8 +77,9 @@ CineLens/
 - [x] 내가 본 영화 목록 (마이페이지 — 포스터 그리드, 클릭 시 상세 이동)
 - [x] 시청 기록 평점 수정 (상세 페이지 진입 시 기존 평점 자동 로드)
 - [x] 시청 기록 삭제 (마이페이지, 확인창 포함)
-- [ ] 정렬 및 필터 (평점순, 장르별)
-- [ ] 추천 결과 UI
+- [x] 정렬 (마이페이지 — 평점 오름차순/내림차순)
+- [x] 장르 필터 (홈 — 체크박스, TMDB 장르 목록 API 연동)
+- [x] 추천 결과 UI (추천 페이지 — 로딩/빈 상태 처리, 추천 이유 표시)
 
 ### Backend
 - [x] Spring Boot + MySQL + JPA 프로젝트 세팅
@@ -86,10 +87,10 @@ CineLens/
 - [x] 시청 기록 등록/조회/수정/삭제 API
 - [x] 익명 사용자 ID 헤더(`X-User-Id`) 기반 처리
 - [x] CORS 설정
-- [x] 프론트엔드 연동 확인 (등록/조회)
-- [ ] TMDB 프록시 API
-- [ ] 취향 분석 로직 (선호 장르/감독 분석)
-- [ ] 추천 로직 (가중치 기반 점수 계산)
+- [x] 프론트엔드 연동 확인 (등록/조회/수정/삭제)
+- [x] 취향 분석 로직 (선호 장르/감독 분석, 시청기록 가중 평균 기반)
+- [x] 추천 로직 (가중치 기반 점수 계산 — 장르 40%+감독 30%+평점 20%+유사도 10%, 2단계 계산으로 TMDB 호출 최적화)
+- [ ] TMDB 프록시 API (현재 프론트는 TMDB 직접 호출 중, 추천 API는 백엔드 경유로 구현됨)
 
 ### 확장 (선택)
 - [ ] 취향 분석 차트
@@ -109,6 +110,12 @@ CineLens/
 | PUT | `/api/watched-movies/{movieId}` | 평점 수정 (현재는 POST 재호출로 처리) | — |
 | DELETE | `/api/watched-movies/{movieId}` | 시청 기록 삭제 | ✅ 완료 |
 
+### 추천 (`/api/recommendations`)
+
+| Method | Endpoint | 설명 | 프론트 연동 |
+|---|---|---|---|
+| GET | `/api/recommendations` | 시청 기록 기반 개인화 영화 추천 (상위 10개, 추천 이유 포함) | ✅ 완료 |
+
 ## 개발 일정
 
 | 기간 | 목표 | 상태 |
@@ -116,8 +123,8 @@ CineLens/
 | 8/19 ~ 8/26 | React/TS 기초 설계, 영화 탐색 기능 | 완료 |
 | 8/27 ~ 9/2 | Spring Boot + DB 연동 | 완료 |
 | 9/3 ~ 9/4 | 프론트-백엔드 연동, 마이페이지 (조회/등록/수정/삭제) | 완료 |
-| 9/8 ~ 9/12 | 정렬/필터, 추천 시스템 | 예정 |
-| 9/13 ~ 9/16 | 스타일링, 버그 수정, 선택 기능(MCP 등) | 예정 |
+| 9/8 ~ 9/9 | 정렬/필터, 추천 시스템 (백엔드 로직 + 프론트 연동) | 완료 |
+| 9/10 ~ 9/16 | 스타일링, 버그 수정, 선택 기능(MCP 등) | 예정 |
 | 9/17 ~ 9/18 | 배포, README 정리, 최종 점검 | 예정 |
 
 **최종 마감: 2026년 9월 18일**
@@ -130,9 +137,10 @@ CineLens/
    ```sql
    CREATE DATABASE cinelens CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
-2. `backend/src/main/resources/application-local.properties` 생성 후 DB 비밀번호 설정
+2. `backend/src/main/resources/application-local.properties` 생성 후 DB 비밀번호 및 TMDB API 키 설정
    ```properties
    spring.datasource.password=your_password
+   tmdb.api.key=your_tmdb_api_key
    ```
 3. 프로젝트 실행 (Spring Boot 서버는 `8080` 포트에서 구동)
 

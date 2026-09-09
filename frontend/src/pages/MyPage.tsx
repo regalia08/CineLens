@@ -21,14 +21,15 @@ function MyPage() {
   async function getMovieList() {
     const watchedList = await apiRequest('/api/watched-movies');
 
-    const posterList = await Promise.all(
-      watchedList.map((item) =>
-        fetch(`${API_URL}/${item.movieId}?api_key=${API_KEY}&language=ko-KR`)
-          .then((res) => res.json())
-      )
+    const mergedList = await Promise.all(
+      watchedList.map(async (item) => {
+        const tmdbData = await fetch(`${API_URL}/${item.movieId}?api_key=${API_KEY}&language=ko-KR`)
+          .then((res) => res.json());
+        return { ...tmdbData, rating: item.rating };
+      })
     );
-    console.log(posterList);
-    setMovieList(posterList);
+
+    setMovieList(mergedList);
   }
 
   async function delView(movieId: number){
@@ -44,10 +45,22 @@ function MyPage() {
 
   }
 
+  const handleSortAsc = () => {
+    const sorted = [...moviList].sort((a, b) => a.rating - b.rating);
+    setMovieList(sorted);
+  };
+
+  const handleSortDesc = () => {
+    const sorted = [...moviList].sort((a, b) => b.rating - a.rating);
+    setMovieList(sorted);
+  };
+
 
   return (
     <div>
       <div>
+        <button onClick={handleSortAsc}>평점 오름차순</button>
+        <button onClick={handleSortDesc}>평점 내림차순</button>
         {moviList.map((movie) => {
           const imageUrl = `https://image.tmdb.org/t/p/w200${movie.poster_path}`;
           return(
@@ -58,6 +71,7 @@ function MyPage() {
                 </div>
               </Link>
               <button onClick={() => delView(movie.id)}>삭제</button>
+              
             </div>
           );
         })}
