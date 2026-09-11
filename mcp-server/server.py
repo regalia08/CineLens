@@ -1,15 +1,16 @@
+import os
+from dotenv import load_dotenv
 import requests
 from mcp.server.fastmcp import FastMCP
+
+load_dotenv()
 
 mcp = FastMCP("CineLens")
 
 BACKEND_URL = "http://localhost:8080"
-TMDB_API_KEY = "b196f99f5f6642dd9670f563036be138"
 TMDB_URL = "https://api.themoviedb.org/3"
-
-# 지금은 테스트용 고정 UUID. 나중에 사용자별로 바꾸고 싶으면
-# 이 상수를 각 함수의 파라미터로 옮기면 됨.
-TEST_USER_ID = "ff74d04c-876b-4b2e-87dc-df9d5ffbc634"
+TMDB_API_KEY = os.getenv("TMDB_API_KEY")
+TEST_USER_ID = os.getenv("TEST_USER_ID")
 
 
 def _headers():
