@@ -10,7 +10,7 @@ CineLens는 사용자가 시청한 영화와 개인 평점을 기반으로 영�
 
 사용자는 영화를 검색해 시청 기록으로 등록하고 개인 평점을 남길 수 있으며, 서비스는 이 데이터를 분석해 선호 장르·감독을 파악하고 맞춤형 추천을 제공합니다.
 
-추후 MCP(Model Context Protocol)와 LLM을 연동해, 자연어로 추천 조건을 입력하면 AI가 사용자의 취향과 요청을 종합 분석해 영화를 추천하는 기능으로 확장할 예정입니다.
+MCP(Model Context Protocol) 서버를 통해 Claude 등 LLM 클라이언트에서 시청 기록 조회, 개인화 추천, 영화 검색, 시청 기록 등록/수정/삭제까지 자연어로 요청할 수 있습니다.
 
 ## 기술 스택
 
@@ -21,7 +21,8 @@ CineLens는 사용자가 시청한 영화와 개인 평점을 기반으로 영�
 | Database | MySQL, Spring Data JPA |
 | External API | TMDB (The Movie Database) |
 | 사용자 식별 | 익명 UUID (localStorage 기반) |
-| AI/LLM (확장 예정) | MCP, 로컬 LLM |
+| AI/LLM | MCP 서버 (Python, FastMCP) + Claude Desktop |
+| 로컬 LLM 연동 | 예정 (선택) |
 
 ## 프로젝트 구조
 
@@ -40,6 +41,8 @@ CineLens/
         ├── controller/    # REST API
         ├── dto/          # 요청/응답 DTO
         └── config/       # CORS 등 설정
+└── mcp-server/         # MCP 서버 (Python)
+    └── server.py       # 도구 정의 (조회 4개 + CRUD 3개)
 ```
 
 ## 주요 설계
@@ -62,6 +65,19 @@ CineLens/
 ```
 
 사용자의 시청 기록과 평점 데이터를 기반으로 장르/감독 선호도를 분석하고, 이미 시청한 영화를 제외한 후보 영화에 위 가중치를 적용해 추천 점수를 계산합니다.
+
+### MCP 연동
+
+기존 REST API(시청 기록 CRUD, 추천)를 새로 개발하지 않고 그대로 감싸는 방식으로 MCP 서버를 구현했습니다. Python(FastMCP, mcp&lt;2)으로 작성했으며 Claude Desktop과 연결해 자연어로 서비스를 조작할 수 있습니다.
+
+제공 도구 7개:
+- `get_watched_movies` — 시청 기록 조회
+- `recommend_movies` — 개인화 추천 조회
+- `search_movies` — TMDB 영화 검색
+- `get_popular_movies` — TMDB 인기 영화 조회
+- `add_watched_movie` / `update_rating` / `delete_watched_movie` — 시청 기록 등록/수정/삭제
+
+현재는 테스트용 고정 UUID를 사용하며, 추후 호출 시점에 사용자 UUID를 파라미터로 받는 방식으로 확장 가능합니다.
 
 ## 진행 현황
 
@@ -93,8 +109,8 @@ CineLens/
 - [ ] TMDB 프록시 API (현재 프론트는 TMDB 직접 호출 중, 추천 API는 백엔드 경유로 구현됨)
 
 ### 확장 (선택)
+- [x] MCP 연동 (조회 4개 + CRUD 3개 도구, Claude Desktop 연결 확인)
 - [ ] 취향 분석 차트
-- [ ] MCP 연동
 - [ ] 로컬 LLM 기반 자연어 추천
 
 ## API
@@ -124,7 +140,8 @@ CineLens/
 | 8/27 ~ 9/2 | Spring Boot + DB 연동 | 완료 |
 | 9/3 ~ 9/4 | 프론트-백엔드 연동, 마이페이지 (조회/등록/수정/삭제) | 완료 |
 | 9/8 ~ 9/9 | 정렬/필터, 추천 시스템 (백엔드 로직 + 프론트 연동) | 완료 |
-| 9/10 ~ 9/16 | 스타일링, 버그 수정, 선택 기능(MCP 등) | 예정 |
+| 9/11 | MCP 서버 구현 및 Claude Desktop 연동 | 완료 |
+| 9/12 ~ 9/16 | 스타일링, 버그 수정 | 예정 |
 | 9/17 ~ 9/18 | 배포, README 정리, 최종 점검 | 예정 |
 
 **최종 마감: 2026년 9월 18일**
@@ -157,3 +174,22 @@ CineLens/
    npm run dev
    ```
 3. `http://localhost:5173` 접속
+
+### MCP 서버 (선택)
+
+1. 가상환경 세팅 및 라이브러리 설치
+   ```bash
+   cd mcp-server
+   python -m venv venv
+   venv\Scripts\activate
+   pip install "mcp<2" requests
+   ```
+2. `server.py` 상단의 `TMDB_API_KEY`, `TEST_USER_ID`를 실제 값으로 설정
+3. Claude Desktop 설정 파일(`claude_desktop_config.json`)의 `mcpServers`에 아래 항목 추가 후 재시작
+   ```json
+   "cinelens": {
+     "command": "<프로젝트경로>/mcp-server/venv/Scripts/python.exe",
+     "args": ["<프로젝트경로>/mcp-server/server.py"]
+   }
+   ```
+4. Spring Boot 백엔드가 켜진 상태에서 Claude Desktop에 자연어로 요청 (예: "내가 본 영화 목록 보여줘")
