@@ -12,6 +12,8 @@ CineLens는 사용자가 시청한 영화와 개인 평점을 기반으로 영�
 
 MCP(Model Context Protocol) 서버를 통해 Claude 등 LLM 클라이언트에서 시청 기록 조회, 개인화 추천, 영화 검색, 시청 기록 등록/수정/삭제까지 자연어로 요청할 수 있습니다.
 
+웹앱 자체에도 채팅 페이지를 두어, Gemini API(Function Calling)를 통해 로그인 없이 바로 자연어로 시청 기록 조회·추천·검색을 요청할 수 있습니다. LLM 프로바이더를 교체할 수 있도록 `LlmService` 인터페이스로 추상화했습니다.
+
 ## 기술 스택
 
 | 구분 | 기술 |
@@ -21,8 +23,8 @@ MCP(Model Context Protocol) 서버를 통해 Claude 등 LLM 클라이언트에�
 | Database | MySQL, Spring Data JPA |
 | External API | TMDB (The Movie Database) |
 | 사용자 식별 | 익명 UUID (localStorage 기반) |
-| AI/LLM | MCP 서버 (Python, FastMCP) + Claude Desktop |
-| 로컬 LLM 연동 | 예정 (선택) |
+| AI/LLM | MCP 서버 (Python, FastMCP) + Claude Desktop / 인앱 챗봇 (Gemini API, Function Calling) |
+| 멀티 LLM 확장 | `LlmService` 인터페이스로 프로바이더 추상화 (Claude 등 추가 예정) |
 
 ## 프로젝트 구조
 
@@ -30,7 +32,7 @@ MCP(Model Context Protocol) 서버를 통해 Claude 등 LLM 클라이언트에�
 CineLens/
 ├── frontend/           # React + TypeScript (Vite)
 │   └── src/
-│       ├── pages/      # 페이지 컴포넌트 (Home, Search, MovieDetail, MyPage)
+│       ├── pages/      # 페이지 컴포넌트 (Home, Search, MovieDetail, MyPage, Recommendation, Chat)
 │       ├── utils/       # 유틸 함수 (익명 사용자 ID 등)
 │       └── App.tsx      # 공통 레이아웃 (네비게이션 + Outlet)
 └── backend/            # Spring Boot
@@ -79,6 +81,16 @@ CineLens/
 
 현재는 테스트용 고정 UUID를 사용하며, 추후 호출 시점에 사용자 UUID를 파라미터로 받는 방식으로 확장 가능합니다.
 
+### 인앱 챗봇 (자연어 영화 추천)
+
+MCP가 Claude Desktop 등 외부 클라이언트 전용이라는 한계를 보완하기 위해, 웹앱 자체에 채팅 페이지(`/chat`)를 추가했습니다. 백엔드에 `LlmService` 인터페이스를 두고 `GeminiService`로 구현했으며, Gemini의 Function Calling으로 아래 도구를 호출합니다.
+
+- `get_watched_movies` — 시청 기록 조회 (TMDB 상세정보와 병합해 영화 제목까지 포함해 반환)
+- `recommend_movies` — 개인화 추천 조회
+- `search_movies` — TMDB 영화 검색
+
+도구 호출 → 실행 → 결과를 다시 LLM에 전달 → 최종 답변까지 여러 턴을 오가는 에이전틱 루프로 구현했으며, `LlmService` 인터페이스 덕분에 추후 Claude 등 다른 프로바이더를 구현체만 추가해 확장할 수 있습니다.
+
 ## 진행 현황
 
 ### Frontend
@@ -96,6 +108,7 @@ CineLens/
 - [x] 정렬 (마이페이지 — 평점 오름차순/내림차순)
 - [x] 장르 필터 (홈 — 체크박스, TMDB 장르 목록 API 연동)
 - [x] 추천 결과 UI (추천 페이지 — 로딩/빈 상태 처리, 추천 이유 표시)
+- [x] 인앱 채팅 UI (`/chat` — 대화 기록 렌더링, 전송/엔터 처리)
 
 ### Backend
 - [x] Spring Boot + MySQL + JPA 프로젝트 세팅
@@ -106,12 +119,15 @@ CineLens/
 - [x] 프론트엔드 연동 확인 (등록/조회/수정/삭제)
 - [x] 취향 분석 로직 (선호 장르/감독 분석, 시청기록 가중 평균 기반)
 - [x] 추천 로직 (가중치 기반 점수 계산 — 장르 40%+감독 30%+평점 20%+유사도 10%, 2단계 계산으로 TMDB 호출 최적화)
-- [ ] TMDB 프록시 API (현재 프론트는 TMDB 직접 호출 중, 추천 API는 백엔드 경유로 구현됨)
+- [x] 인앱 챗봇 (`LlmService` 인터페이스 + `GeminiService`, Function Calling 에이전틱 루프, `/api/chat`)
+- [ ] TMDB 프록시 API (현재 프론트는 TMDB 직접 호출 중, 추천/챗봇 API는 백엔드 경유로 구현됨)
 
 ### 확장 (선택)
 - [x] MCP 연동 (조회 4개 + CRUD 3개 도구, Claude Desktop 연결 확인)
+- [x] 인앱 자연어 추천 챗봇 (Gemini Function Calling)
 - [ ] 취향 분석 차트
-- [ ] 로컬 LLM 기반 자연어 추천
+- [ ] 멀티 LLM 프로바이더 추가 (Claude 등, `LlmService` 구현체 확장)
+- [ ] Docker 구성 (마감 이후 별도 작업 예정)
 
 ## API
 
@@ -132,6 +148,12 @@ CineLens/
 |---|---|---|---|
 | GET | `/api/recommendations` | 시청 기록 기반 개인화 영화 추천 (상위 10개, 추천 이유 포함) | ✅ 완료 |
 
+### 챗봇 (`/api/chat`)
+
+| Method | Endpoint | 설명 | 프론트 연동 |
+|---|---|---|---|
+| POST | `/api/chat` | 자연어 메시지로 시청기록 조회/추천/검색 요청 (Gemini Function Calling) | ✅ 완료 |
+
 ## 개발 일정
 
 | 기간 | 목표 | 상태 |
@@ -141,8 +163,9 @@ CineLens/
 | 9/3 ~ 9/4 | 프론트-백엔드 연동, 마이페이지 (조회/등록/수정/삭제) | 완료 |
 | 9/8 ~ 9/9 | 정렬/필터, 추천 시스템 (백엔드 로직 + 프론트 연동) | 완료 |
 | 9/11 | MCP 서버 구현 및 Claude Desktop 연동 | 완료 |
-| 9/12 ~ 9/16 | 스타일링, 버그 수정 | 예정 |
-| 9/17 ~ 9/18 | 배포, README 정리, 최종 점검 | 예정 |
+| 9/14 | 인앱 챗봇 (Gemini Function Calling, 백엔드+프론트) | 완료 |
+| 9/15 ~ 9/16 | 버그 점검, Tailwind 스타일링 | 예정 |
+| 9/17 ~ 9/18 | README 정리, 최종 점검 | 예정 |
 
 **최종 마감: 2026년 9월 18일**
 
@@ -154,10 +177,12 @@ CineLens/
    ```sql
    CREATE DATABASE cinelens CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
-2. `backend/src/main/resources/application-local.properties` 생성 후 DB 비밀번호 및 TMDB API 키 설정
+2. `backend/src/main/resources/application-local.properties` 생성 후 DB 비밀번호, TMDB API 키, Gemini API 키 설정
    ```properties
    spring.datasource.password=your_password
    tmdb.api.key=your_tmdb_api_key
+   gemini.api.key=your_gemini_api_key
+   llm.provider=gemini
    ```
 3. 프로젝트 실행 (Spring Boot 서버는 `8080` 포트에서 구동)
 

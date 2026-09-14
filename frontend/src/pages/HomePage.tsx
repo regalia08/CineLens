@@ -58,7 +58,7 @@ function HomePage() {
               type='checkbox'
               id={genre.name}
               onChange={(e) => handleGenreCheck(genre.id, e.target.checked)}
-            /><label htmlFor={genre.name}>{genre.name}</label>
+            /><label htmlFor={genre.name} className="text-red-500">{genre.name}</label>
           </div>
 
         );

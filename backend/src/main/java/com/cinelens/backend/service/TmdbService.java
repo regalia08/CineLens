@@ -34,4 +34,11 @@ public class TmdbService {
         Map<String, Object> response = restTemplate.getForObject(url, Map.class);
         return (List<Map<String, Object>>) response.get("results");
     }
+    
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> searchMovies(String query) {
+        String url = BASE_URL + "/search/movie?api_key=" + apiKey + "&language=ko-KR&query=" + query;
+        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+        return (List<Map<String, Object>>) response.get("results");
+    }
 }

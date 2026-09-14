@@ -24,6 +24,9 @@ function App() {
           <li>
             <Link to="/recomm">추천페이지</Link>
           </li>
+          <li>
+            <Link to="/chat">Chat</Link>
+          </li>
         </ul>
       </nav>
 
