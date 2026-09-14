@@ -18,7 +18,7 @@ MCP(Model Context Protocol) 서버를 통해 Claude 등 LLM 클라이언트에�
 
 | 구분 | 기술 |
 |---|---|
-| Frontend | React, TypeScript, Vite |
+| Frontend | React, TypeScript, Vite, Tailwind CSS |
 | Backend | Spring Boot, Java |
 | Database | MySQL, Spring Data JPA |
 | External API | TMDB (The Movie Database) |
@@ -33,6 +33,7 @@ CineLens/
 ├── frontend/           # React + TypeScript (Vite)
 │   └── src/
 │       ├── pages/      # 페이지 컴포넌트 (Home, Search, MovieDetail, MyPage, Recommendation, Chat)
+│       ├── components/ # 재사용 컴포넌트 (MovieCard, StarRating)
 │       ├── utils/       # 유틸 함수 (익명 사용자 ID 등)
 │       └── App.tsx      # 공통 레이아웃 (네비게이션 + Outlet)
 └── backend/            # Spring Boot

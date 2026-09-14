@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import MovieCard from "../components/MovieCard";
+
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const API_URL = 'https://api.themoviedb.org/3/movie/';
@@ -39,7 +41,7 @@ function HomePage() {
 
   const filteredMovies = Movies.filter((movie) => {
     if (chkGenres.length === 0) return true; // 선택 없으면 전체 보여줌
-    return movie.genre_ids.some((id) => 
+    return movie.genre_ids.some((id) =>
       chkGenres.includes(id)
     );
   });
@@ -49,12 +51,12 @@ function HomePage() {
   }, [chkGenres]);
 
   return (
-    
+
     <div className="movie-list">
       {genres.map((genre) => {
-        return(
+        return (
           <div key={genre.id}>
-            <input 
+            <input
               type='checkbox'
               id={genre.name}
               onChange={(e) => handleGenreCheck(genre.id, e.target.checked)}
@@ -63,16 +65,16 @@ function HomePage() {
 
         );
       })}
-      {filteredMovies.map((movie) => {
-        const imageUrl = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
-        return(
-        <div key={movie.id}>
-          title={movie.title}<br />
-          <img src={imageUrl} alt={movie.title} /><br />
-          overview={movie.overview}<br /><br />
-        </div>
-      );
-    })}
+      <div className="flex flex-wrap gap-4">
+        {filteredMovies.map((movie) => (
+          <MovieCard
+            key={movie.id}
+            movieId={movie.id}
+            title={movie.title}
+            posterPath={movie.poster_path}
+          />
+        ))}
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiRequest } from "../utils/api";
-import { Link } from 'react-router-dom';
+import MovieCard from "../components/MovieCard";
+
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const API_URL = 'https://api.themoviedb.org/3/movie';
@@ -16,7 +17,7 @@ function MyPage() {
     getMovieList();
 
 
-    }, []);
+  }, []);
 
   async function getMovieList() {
     const watchedList = await apiRequest('/api/watched-movies');
@@ -32,7 +33,7 @@ function MyPage() {
     setMovieList(mergedList);
   }
 
-  async function delView(movieId: number){
+  async function delView(movieId: number) {
     const isConfirmed = confirm("정말 삭제하시겠습니까?");
     if (!isConfirmed) {
       return; // 취소하면 여기서 함수 종료, 삭제 안 함
@@ -58,23 +59,31 @@ function MyPage() {
 
   return (
     <div>
-      <div>
-        <button onClick={handleSortAsc}>평점 오름차순</button>
-        <button onClick={handleSortDesc}>평점 내림차순</button>
-        {moviList.map((movie) => {
-          const imageUrl = `https://image.tmdb.org/t/p/w200${movie.poster_path}`;
-          return(
-            <div key={movie.id}>
-              <Link to={`/movie/${movie.id}`}>
-                <div>
-                  <img src={imageUrl} alt={movie.title} /><br />
-                </div>
-              </Link>
-              <button onClick={() => delView(movie.id)}>삭제</button>
-              
-            </div>
-          );
-        })}
+      <div className="flex gap-2 mb-6">
+        <button
+          onClick={handleSortAsc}
+          className="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded text-sm transition-colors"
+        >
+          평점 오름차순
+        </button>
+        <button
+          onClick={handleSortDesc}
+          className="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded text-sm transition-colors"
+        >
+          평점 내림차순
+        </button>
+      </div>
+      <div className="grid grid-cols-5 gap-4">
+        {moviList.map((movie) => (
+          <MovieCard
+            key={movie.id}
+            movieId={movie.id}
+            title={movie.title}
+            posterPath={movie.poster_path}
+            subtitle={`⭐ ${movie.rating}`}
+            onDelete={() => delView(movie.id)}
+          />
+        ))}
       </div>
     </div>
   );
