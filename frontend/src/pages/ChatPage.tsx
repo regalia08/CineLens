@@ -9,6 +9,8 @@ type ChatMessage = {
 function ChatPage() {
     const [strLog, setStrLog] = useState<ChatMessage[]>([]);
     const [strChat, setStrChat] = useState<string>('');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+
 
     const chatTxt = (event: React.ChangeEvent<HTMLInputElement>) => {
         setStrChat(event.target.value);
@@ -21,19 +23,28 @@ function ChatPage() {
         }
     }
     async function sendMessage() {
-        if (strChat.trim() === '') return; // 빈 메시지 방지
+        if (strChat.trim() === '') return;
+        if (isLoading) return;
+
+        setIsLoading(true);
 
         const userMessage: ChatMessage = { role: 'user', text: strChat };
         setStrLog((prev) => [...prev, userMessage]);
         setStrChat('');
 
-        const result = await apiRequest('/api/chat', {
-            method: 'POST',
-            body: JSON.stringify({ message: strChat }),
-        });
-
-        const aiMessage: ChatMessage = { role: 'assistant', text: result.reply };
-        setStrLog((prev) => [...prev, aiMessage]);
+        try {
+            const result = await apiRequest('/api/chat', {
+                method: 'POST',
+                body: JSON.stringify({ message: strChat }),
+            });
+            const aiMessage: ChatMessage = { role: 'assistant', text: result.reply };
+            setStrLog((prev) => [...prev, aiMessage]);
+        } catch (error) {
+            const errorMessage: ChatMessage = { role: 'assistant', text: '죄송해요, 오류가 발생했어요. 잠시 후 다시 시도해주세요.' };
+            setStrLog((prev) => [...prev, errorMessage]);
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     return (
@@ -48,8 +59,10 @@ function ChatPage() {
             <input
                 className="chat"
                 type="text"
+                value={strChat}
                 onChange={chatTxt}
                 onKeyDown={handleKeyDown}
+                disabled={isLoading}
             />
 
         </div>

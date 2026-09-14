@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.*;
 
@@ -46,7 +47,12 @@ public class GeminiService implements LlmService {
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
             String url = String.format(URL_TEMPLATE, MODEL, apiKey);
-            Map<String, Object> response = restTemplate.postForObject(url, entity, Map.class);
+            Map<String, Object> response;
+            try {
+                response = restTemplate.postForObject(url, entity, Map.class);
+            } catch (HttpClientErrorException.TooManyRequests e) {
+                return "지금 요청이 많아 응답이 지연되고 있어요. 잠시 후 다시 시도해주세요.";
+            }
 
             List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.get("candidates");
             Map<String, Object> candidate = candidates.get(0);
