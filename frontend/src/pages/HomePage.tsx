@@ -53,19 +53,24 @@ function HomePage() {
   return (
 
     <div className="movie-list">
-      {genres.map((genre) => {
-        return (
-          <div key={genre.id}>
-            <input
-              type='checkbox'
-              id={genre.name}
-              onChange={(e) => handleGenreCheck(genre.id, e.target.checked)}
-            /><label htmlFor={genre.name} className="text-red-500">{genre.name}</label>
-          </div>
-
-        );
-      })}
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-2 mb-6">
+        {genres.map((genre) => {
+          const isChecked = chkGenres.includes(genre.id);
+          return (
+            <button
+              key={genre.id}
+              onClick={() => handleGenreCheck(genre.id, !isChecked)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${isChecked
+                  ? 'bg-red-600 text-white'
+                  : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                }`}
+            >
+              {genre.name}
+            </button>
+          );
+        })}
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
         {filteredMovies.map((movie) => (
           <MovieCard
             key={movie.id}

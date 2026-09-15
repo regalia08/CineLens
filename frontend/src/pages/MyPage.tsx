@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiRequest } from "../utils/api";
 import MovieCard from "../components/MovieCard";
+import Spinner from "../components/Spinner";
 
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -12,6 +13,8 @@ const API_URL = 'https://api.themoviedb.org/3/movie';
 function MyPage() {
 
   const [moviList, setMovieList] = useState<any>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
 
   useEffect(() => {
     getMovieList();
@@ -20,6 +23,8 @@ function MyPage() {
   }, []);
 
   async function getMovieList() {
+    setIsLoading(true);
+
     const watchedList = await apiRequest('/api/watched-movies');
 
     const mergedList = await Promise.all(
@@ -31,6 +36,7 @@ function MyPage() {
     );
 
     setMovieList(mergedList);
+    setIsLoading(false);
   }
 
   async function delView(movieId: number) {
@@ -56,6 +62,13 @@ function MyPage() {
     setMovieList(sorted);
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center mt-20">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -73,14 +86,14 @@ function MyPage() {
           평점 내림차순
         </button>
       </div>
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
         {moviList.map((movie) => (
           <MovieCard
             key={movie.id}
             movieId={movie.id}
             title={movie.title}
             posterPath={movie.poster_path}
-            subtitle={`⭐ ${movie.rating}`}
+            rating={movie.rating}
             onDelete={() => delView(movie.id)}
           />
         ))}

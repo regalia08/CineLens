@@ -103,6 +103,20 @@ public class GeminiService implements LlmService {
             case "get_watched_movies" -> toolExecutor.getWatchedMovies(userId);
             case "recommend_movies" -> toolExecutor.recommendMovies(userId);
             case "search_movies" -> toolExecutor.searchMovies((String) args.get("query"));
+            case "add_watched_movie" -> toolExecutor.addWatchedMovie(
+                    userId,
+                    ((Number) args.get("movieId")).intValue(),
+                    ((Number) args.get("rating")).doubleValue()
+            );
+            case "update_rating" -> toolExecutor.updateRating(
+                    userId,
+                    ((Number) args.get("movieId")).intValue(),
+                    ((Number) args.get("rating")).doubleValue()
+            );
+            case "delete_watched_movie" -> toolExecutor.deleteWatchedMovie(
+                    userId,
+                    ((Number) args.get("movieId")).intValue()
+            );
             default -> Map.of("error", "알 수 없는 도구: " + name);
         };
     }
@@ -126,6 +140,41 @@ public class GeminiService implements LlmService {
                                         "query", Map.of("type", "STRING", "description", "검색할 영화 제목")
                                 ),
                                 "required", List.of("query")
+                        )
+                ),
+                Map.of(
+                        "name", "add_watched_movie",
+                        "description", "영화를 시청 기록에 등록하고 평점을 저장합니다.",
+                        "parameters", Map.of(
+                                "type", "OBJECT",
+                                "properties", Map.of(
+                                        "movieId", Map.of("type", "INTEGER", "description", "TMDB 영화 ID"),
+                                        "rating", Map.of("type", "NUMBER", "description", "0~5 사이의 평점")
+                                ),
+                                "required", List.of("movieId", "rating")
+                        )
+                ),
+                Map.of(
+                        "name", "update_rating",
+                        "description", "이미 시청 기록에 등록된 영화의 평점을 수정합니다.",
+                        "parameters", Map.of(
+                                "type", "OBJECT",
+                                "properties", Map.of(
+                                        "movieId", Map.of("type", "INTEGER", "description", "TMDB 영화 ID"),
+                                        "rating", Map.of("type", "NUMBER", "description", "0~5 사이의 새 평점")
+                                ),
+                                "required", List.of("movieId", "rating")
+                        )
+                ),
+                Map.of(
+                        "name", "delete_watched_movie",
+                        "description", "시청 기록에서 영화를 삭제합니다.",
+                        "parameters", Map.of(
+                                "type", "OBJECT",
+                                "properties", Map.of(
+                                        "movieId", Map.of("type", "INTEGER", "description", "TMDB 영화 ID")
+                                ),
+                                "required", List.of("movieId")
                         )
                 )
         );

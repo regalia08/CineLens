@@ -12,7 +12,7 @@ function App() {
     <div className="min-h-screen bg-black text-white">
       <nav className="max-w-6xl mx-auto flex items-center gap-6 px-8 py-4">
         <span className="text-red-600 text-2xl font-bold mr-4">CineLens</span>
-        <ul className="flex gap-6">
+        <ul className="flex flex-wrap gap-6">
           <li>
             <Link to="/" className="hover:text-zinc-400 transition-colors">홈</Link>
           </li>

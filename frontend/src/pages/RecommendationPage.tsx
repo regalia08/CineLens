@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiRequest } from "../utils/api";
 import MovieCard from "../components/MovieCard";
-
+import Spinner from "../components/Spinner";
 
 function RecommendationPage() {
   const [recommendations, setRecommendations] = useState<any[]>([]);
@@ -20,8 +20,9 @@ function RecommendationPage() {
 
   if (isLoading) {
     return (
-      <div className="text-center text-zinc-400 mt-20">
-        추천 영화를 분석하는 중입니다...
+      <div className="flex flex-col items-center gap-4 mt-20">
+        <Spinner />
+        <p className="text-zinc-400">취향을 분석하고 있어요</p>
       </div>
     );
   }
@@ -37,7 +38,7 @@ function RecommendationPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">당신을 위한 추천 영화</h1>
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
         {recommendations.map((movie) => (
           <MovieCard
             key={movie.movieId}

@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { apiRequest } from "../utils/api";
 import StarRating from "../components/StarRating";
+import Spinner from "../components/Spinner";
 
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -13,10 +14,12 @@ function MovieDetailPage() {
   const params = useParams();
   const [movieDetail, setMovieDetail] = useState<any>(null);
   const [strRating, setRating] = useState<number>(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   //console.log('movieDetail : ', movieDetail);
 
   useEffect(() => {
+    setImageLoaded(false);
     const endpoint = `${API_URL}/${params.id}?api_key=${API_KEY}&language=ko-KR`
     //console.log(endpoint);
 
@@ -33,7 +36,7 @@ function MovieDetailPage() {
         rating: strRating,
       }),
     });
-    //console.log(result);
+    alert('평점이 저장되었습니다!');
 
   }
 
@@ -60,24 +63,37 @@ function MovieDetailPage() {
         <div>
           <div>
             {movieDetail === null ? (
-              <div className="text-center text-zinc-400 mt-20">로딩 중...</div>
+              <div className="flex justify-center mt-20">
+                <Spinner />
+              </div>
             ) : movieDetail.title ? (
-              <div className="flex gap-8 max-w-4xl">
-                <img
-                  src={`https://image.tmdb.org/t/p/w300${movieDetail.poster_path}`}
-                  alt={movieDetail.title}
-                  className="w-64 rounded-lg flex-shrink-0"
-                />
+              <div className="flex flex-col sm:flex-row gap-8 max-w-4xl pb-12">
+                <div className="w-64 aspect-[2/3] rounded-lg flex-shrink-0 bg-zinc-900 relative overflow-hidden">
+                  {!imageLoaded && (
+                    <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center">
+                      <Spinner />
+                    </div>
+                  )}
+                  <img
+                    src={`https://image.tmdb.org/t/p/w500${movieDetail.poster_path}`}
+                    alt={movieDetail.title}
+                    onLoad={() => setImageLoaded(true)}
+                    className={`w-full h-full object-contain transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'
+                      }`}
+                  />
+                </div>
                 <div className="flex-1">
                   <h1 className="text-3xl font-bold mb-4">{movieDetail.title}</h1>
-                  <p className="text-zinc-400 leading-relaxed mb-6">{movieDetail.overview}</p>
+                  <p className="text-zinc-400 leading-relaxed pb-3">{movieDetail.overview}</p>
 
-                  <div className="flex items-center gap-3">
-                    <label className="text-sm text-zinc-400">내 평점</label>
-                    <StarRating rating={strRating} onChange={setRating} />
+                  <div className="border-t border-zinc-800 pt-6 flex items-center gap-4">
+                    <div className="flex items-center gap-0.5">
+                      <span className="text-base font-medium text-zinc-300">내 평점</span>
+                      <StarRating rating={strRating} onChange={setRating} />
+                    </div>
                     <button
                       onClick={addView}
-                      className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded font-medium transition-colors"
+                      className="bg-red-600 hover:bg-red-700 px-4 py-1.5 ml-1 rounded text-sm font-medium transition-colors"
                     >
                       Viewed
                     </button>

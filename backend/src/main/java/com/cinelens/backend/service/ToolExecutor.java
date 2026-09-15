@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.stream.Collectors;
+import com.cinelens.backend.dto.WatchedMovieRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -39,5 +40,21 @@ public class ToolExecutor {
 
     public Object searchMovies(String query) {
         return tmdbService.searchMovies(query);
+    }
+    
+    public Object addWatchedMovie(String userId, Integer movieId, Double rating) {
+        WatchedMovieRequest request = new WatchedMovieRequest();
+        request.setMovieId(movieId);
+        request.setRating(rating);
+        return watchedMovieService.register(userId, request);
+    }
+
+    public Object updateRating(String userId, Integer movieId, Double rating) {
+        return watchedMovieService.updateRating(userId, movieId, rating);
+    }
+
+    public Object deleteWatchedMovie(String userId, Integer movieId) {
+        watchedMovieService.delete(userId, movieId);
+        return Map.of("deleted", true, "movieId", movieId);
     }
 }
