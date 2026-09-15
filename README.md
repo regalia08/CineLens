@@ -102,6 +102,10 @@ CineLens/
 
 현재는 테스트용 고정 UUID를 사용하며, 추후 호출 시점에 사용자 UUID를 파라미터로 받는 방식으로 확장 가능합니다.
 
+**검증 로직이 MCP 경로에서도 동작함을 확인** — 평점 유효성 검증(0~5 범위)을 컨트롤러가 아니라 Service 레벨에 둔 덕분에, 웹 UI뿐 아니라 MCP를 통한 요청도 동일하게 걸러집니다. Claude Desktop에 "포레스트 검프 8점으로 수정해줘"라고 요청하면, 백엔드가 거부한 결과를 Claude가 해석해 자연스럽게 되묻습니다.
+
+![MCP 평점 검증](./screenshots/08-mcp-validation.png)
+
 ### 인앱 챗봇 (자연어 영화 추천)
 
 MCP가 Claude Desktop 등 외부 클라이언트 전용이라는 한계를 보완하기 위해, 웹앱 자체에 채팅 페이지(`/chat`)를 추가했습니다. 백엔드에 `LlmService` 인터페이스를 두고 `GeminiService`로 구현했으며, Gemini의 Function Calling으로 아래 도구를 호출합니다.
