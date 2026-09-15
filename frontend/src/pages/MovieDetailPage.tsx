@@ -15,6 +15,7 @@ function MovieDetailPage() {
   const [movieDetail, setMovieDetail] = useState<any>(null);
   const [strRating, setRating] = useState<number>(0);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [savedRating, setSavedRating] = useState<number>(0);
 
   //console.log('movieDetail : ', movieDetail);
 
@@ -36,6 +37,7 @@ function MovieDetailPage() {
         rating: strRating,
       }),
     });
+    setSavedRating(strRating);
     alert('평점이 저장되었습니다!');
 
   }
@@ -46,6 +48,7 @@ function MovieDetailPage() {
       const existing = watchedList.find((item) => item.movieId === parseInt(params.id ?? '0'));
       if (existing) {
         setRating(existing.rating);
+        setSavedRating(existing.rating);
       }
     }
     checkExisting();
@@ -70,8 +73,9 @@ function MovieDetailPage() {
               <div className="flex flex-col sm:flex-row gap-8 max-w-4xl pb-12">
                 <div className="w-64 aspect-[2/3] rounded-lg flex-shrink-0 bg-zinc-900 relative overflow-hidden">
                   {!imageLoaded && (
-                    <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-zinc-900 flex flex-col items-center justify-center gap-2">
                       <Spinner />
+                      <p className="text-zinc-500 text-xs">포스터 불러오는 중...</p>
                     </div>
                   )}
                   <img
@@ -97,6 +101,9 @@ function MovieDetailPage() {
                     >
                       Viewed
                     </button>
+                    {strRating !== savedRating && (
+                      <span className="text-xs text-yellow-400">저장되지 않은 변경사항</span>
+                    )}
                   </div>
                 </div>
               </div>

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { apiRequest } from "../utils/api";
 import MovieCard from "../components/MovieCard";
-
+import Spinner from "../components/Spinner";
 
 
 function SearchPage() {
@@ -10,6 +11,20 @@ function SearchPage() {
   const API_URL = 'https://api.themoviedb.org/3/search/movie';
   const [Result, setSearchResult] = useState<any[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [watchedMap, setWatchedMap] = useState<Record<number, number>>({});
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+
+  useEffect(() => {
+    async function loadWatched() {
+      const watchedList = await apiRequest('/api/watched-movies');
+      const map: Record<number, number> = {};
+      watchedList.forEach((item: any) => {
+        map[item.movieId] = item.rating;
+      });
+      setWatchedMap(map);
+    }
+    loadWatched();
+  }, []);
 
   const searchTxt = (event: React.ChangeEvent<HTMLInputElement>) => {
     setStrSearch(event.target.value);
@@ -18,10 +33,14 @@ function SearchPage() {
 
   const runSearch = (query: string) => {
     setSearchParams({ q: query });
+    setIsSearching(true);
     const endpoint = `${API_URL}?api_key=${API_KEY}&query=${query}&language=ko-KR`
     fetch(endpoint)
       .then(response => response.json())
-      .then(response => setSearchResult(response.results));
+      .then(response => {
+        setSearchResult(response.results);
+        setIsSearching(false);
+      });
   }
 
   const searchResult = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -61,16 +80,30 @@ function SearchPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-        {Result.map((movie) => (
-          <MovieCard
-            key={movie.id}
-            movieId={movie.id}
-            title={movie.title}
-            posterPath={movie.poster_path}
-          />
-        ))}
-      </div>
+      {isSearching ? (
+        <div className="flex flex-col items-center gap-4 mt-20">
+          <Spinner />
+          <p className="text-zinc-400">검색 중이에요...</p>
+        </div>
+      ) : Result.length === 0 ? (
+        strSearch.trim() !== '' && (
+          <div className="text-center text-zinc-400 mt-20">
+            검색 결과가 없어요.
+          </div>
+        )
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          {Result.map((movie) => (
+            <MovieCard
+              key={movie.id}
+              movieId={movie.id}
+              title={movie.title}
+              posterPath={movie.poster_path}
+              rating={watchedMap[movie.id]}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

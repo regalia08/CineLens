@@ -10,6 +10,7 @@ function ChatPage() {
     const [strLog, setStrLog] = useState<ChatMessage[]>([]);
     const [strChat, setStrChat] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isLoaded, setIsLoaded] = useState<boolean>(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -22,12 +23,14 @@ function ChatPage() {
         if (saved) {
             setStrLog(JSON.parse(saved));
         }
+        setIsLoaded(true);
     }, []);
 
-    // strLog 바뀔 때마다 저장
+    // strLog 바뀔 때마다 저장 (불러오기가 끝난 뒤부터만)
     useEffect(() => {
+        if (!isLoaded) return;
         localStorage.setItem('chatLog', JSON.stringify(strLog));
-    }, [strLog]);
+    }, [strLog, isLoaded]);
 
     const chatTxt = (event: React.ChangeEvent<HTMLInputElement>) => {
         setStrChat(event.target.value);
@@ -63,8 +66,6 @@ function ChatPage() {
             setIsLoading(false);
         }
     }
-
-    
 
     return (
         <div>

@@ -3,23 +3,16 @@ import { apiRequest } from "../utils/api";
 import MovieCard from "../components/MovieCard";
 import Spinner from "../components/Spinner";
 
-
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const API_URL = 'https://api.themoviedb.org/3/movie';
 
-
-
-
 function MyPage() {
-
   const [moviList, setMovieList] = useState<any>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
+  const [sortType, setSortType] = useState<string>('기본순');
 
   useEffect(() => {
     getMovieList();
-
-
   }, []);
 
   async function getMovieList() {
@@ -31,7 +24,7 @@ function MyPage() {
       watchedList.map(async (item) => {
         const tmdbData = await fetch(`${API_URL}/${item.movieId}?api_key=${API_KEY}&language=ko-KR`)
           .then((res) => res.json());
-        return { ...tmdbData, rating: item.rating };
+        return { ...tmdbData, rating: item.rating, watchedAt: item.watchedAt };
       })
     );
 
@@ -42,50 +35,83 @@ function MyPage() {
   async function delView(movieId: number) {
     const isConfirmed = confirm("정말 삭제하시겠습니까?");
     if (!isConfirmed) {
-      return; // 취소하면 여기서 함수 종료, 삭제 안 함
+      return;
     }
     const result = await apiRequest(`/api/watched-movies/${movieId}`, {
       method: 'DELETE'
     });
-    //console.log(result);
     location.reload();
-
   }
 
   const handleSortAsc = () => {
     const sorted = [...moviList].sort((a, b) => a.rating - b.rating);
     setMovieList(sorted);
+    setSortType('평점 낮은순');
   };
 
   const handleSortDesc = () => {
     const sorted = [...moviList].sort((a, b) => b.rating - a.rating);
     setMovieList(sorted);
+    setSortType('평점 높은순');
+  };
+
+  const handleSortByDateAsc = () => {
+    const sorted = [...moviList].sort((a, b) => new Date(a.watchedAt).getTime() - new Date(b.watchedAt).getTime());
+    setMovieList(sorted);
+    setSortType('오래된순');
+  };
+
+  const handleSortByDateDesc = () => {
+    const sorted = [...moviList].sort((a, b) => new Date(b.watchedAt).getTime() - new Date(a.watchedAt).getTime());
+    setMovieList(sorted);
+    setSortType('최신순');
+  };
+
+  const handleSortByTitle = () => {
+    const sorted = [...moviList].sort((a, b) => a.title.localeCompare(b.title, 'ko'));
+    setMovieList(sorted);
+    setSortType('이름순');
+  };
+
+  const handleSortByTitleDesc = () => {
+    const sorted = [...moviList].sort((a, b) => b.title.localeCompare(a.title, 'ko'));
+    setMovieList(sorted);
+    setSortType('이름 역순');
   };
 
   if (isLoading) {
     return (
-      <div className="flex justify-center mt-20">
+      <div className="flex flex-col items-center gap-4 mt-20">
         <Spinner />
+        <p className="text-zinc-400">내가 본 영화를 불러오고 있어요...</p>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="flex gap-2 mb-6">
-        <button
-          onClick={handleSortAsc}
-          className="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded text-sm transition-colors"
-        >
-          평점 오름차순
+      <div className="flex items-center flex-wrap gap-2 mb-6">
+        <button onClick={handleSortDesc} className="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded text-sm transition-colors">
+          평점 높은순
         </button>
-        <button
-          onClick={handleSortDesc}
-          className="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded text-sm transition-colors"
-        >
-          평점 내림차순
+        <button onClick={handleSortAsc} className="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded text-sm transition-colors">
+          평점 낮은순
         </button>
+        <button onClick={handleSortByDateDesc} className="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded text-sm transition-colors">
+          최신순
+        </button>
+        <button onClick={handleSortByDateAsc} className="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded text-sm transition-colors">
+          오래된순
+        </button>
+        <button onClick={handleSortByTitle} className="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded text-sm transition-colors">
+          이름순
+        </button>
+        <button onClick={handleSortByTitleDesc} className="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded text-sm transition-colors">
+          이름 역순
+        </button>
+        <span className="text-zinc-500 text-sm ml-2">정렬: {sortType}</span>
       </div>
+
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
         {moviList.map((movie) => (
           <MovieCard
@@ -94,6 +120,7 @@ function MyPage() {
             title={movie.title}
             posterPath={movie.poster_path}
             rating={movie.rating}
+            subtitle={new Date(movie.watchedAt).toLocaleDateString('ko-KR')}
             onDelete={() => delView(movie.id)}
           />
         ))}

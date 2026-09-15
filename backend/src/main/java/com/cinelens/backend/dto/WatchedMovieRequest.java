@@ -1,5 +1,7 @@
 package com.cinelens.backend.dto;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,5 +9,8 @@ import lombok.Setter;
 @Setter
 public class WatchedMovieRequest {
     private Integer movieId;
-    private Double rating; // 등록 시 null 가능 (일단 "봤어요"만 누른 경우)
+
+    @DecimalMin(value = "0.0", message = "평점은 0 이상이어야 합니다.")
+    @DecimalMax(value = "5.0", message = "평점은 5 이하여야 합니다.")
+    private Double rating;
 }

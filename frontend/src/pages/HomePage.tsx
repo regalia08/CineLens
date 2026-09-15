@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import MovieCard from "../components/MovieCard";
+import Spinner from "../components/Spinner";
+import { apiRequest } from "../utils/api";
+
 
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -9,15 +12,20 @@ function HomePage() {
   const [Movies, setMovies] = useState([]); // 빈배열 저장해두기
   const [genres, setGenres] = useState<any[]>([]);
   const [chkGenres, setChkGenres] = useState<number[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [watchedMap, setWatchedMap] = useState<Record<number, number>>({});
   //console.log('Movies : ', Movies);
 
   useEffect(() => {
+    setIsLoading(true);
     const endpoint = `${API_URL}popular?api_key=${API_KEY}&language=ko-KR`
-    // console.log(endpoint);
 
     fetch(endpoint)
       .then(response => response.json())
-      .then(response => setMovies(response.results));
+      .then(response => {
+        setMovies(response.results);
+        setIsLoading(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -29,6 +37,18 @@ function HomePage() {
         console.log(response);
         setGenres(response.genres);
       });
+  }, []);
+
+  useEffect(() => {
+    async function loadWatched() {
+      const watchedList = await apiRequest('/api/watched-movies');
+      const map: Record<number, number> = {};
+      watchedList.forEach((item: any) => {
+        map[item.movieId] = item.rating;
+      });
+      setWatchedMap(map);
+    }
+    loadWatched();
   }, []);
 
   const handleGenreCheck = (genreId: number, checked: boolean) => {
@@ -50,6 +70,16 @@ function HomePage() {
     console.log(chkGenres);
   }, [chkGenres]);
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center gap-4 mt-20">
+        <Spinner />
+        <p className="text-zinc-400">인기 영화를 불러오고 있어요...</p>
+      </div>
+    );
+  }
+
+
   return (
 
     <div className="movie-list">
@@ -61,8 +91,8 @@ function HomePage() {
               key={genre.id}
               onClick={() => handleGenreCheck(genre.id, !isChecked)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${isChecked
-                  ? 'bg-red-600 text-white'
-                  : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                ? 'bg-red-600 text-white'
+                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
                 }`}
             >
               {genre.name}
@@ -77,6 +107,7 @@ function HomePage() {
             movieId={movie.id}
             title={movie.title}
             posterPath={movie.poster_path}
+            rating={watchedMap[movie.id]}
           />
         ))}
       </div>

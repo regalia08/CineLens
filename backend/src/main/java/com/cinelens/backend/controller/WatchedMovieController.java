@@ -5,6 +5,7 @@ import com.cinelens.backend.dto.WatchedMovieResponse;
 import com.cinelens.backend.service.WatchedMovieService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class WatchedMovieController {
     @PostMapping
     public WatchedMovieResponse register(
             @RequestHeader("X-User-Id") String userId,
-            @RequestBody WatchedMovieRequest request
+            @Valid @RequestBody WatchedMovieRequest request
     ) {
         return service.register(userId, request);
     }
@@ -37,7 +38,7 @@ public class WatchedMovieController {
     public WatchedMovieResponse updateRating(
             @RequestHeader("X-User-Id") String userId,
             @PathVariable Integer movieId,
-            @RequestBody WatchedMovieRequest request
+            @Valid @RequestBody WatchedMovieRequest request
     ) {
         return service.updateRating(userId, movieId, request.getRating());
     }

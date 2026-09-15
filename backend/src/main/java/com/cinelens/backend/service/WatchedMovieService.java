@@ -18,7 +18,9 @@ public class WatchedMovieService {
 
     // 등록 (이미 있으면 평점만 업데이트)
     public WatchedMovieResponse register(String userId, WatchedMovieRequest request) {
-        WatchedMovie entity = repository.findByUserIdAndMovieId(userId, request.getMovieId())
+    	validateRating(request.getRating());
+        
+    	WatchedMovie entity = repository.findByUserIdAndMovieId(userId, request.getMovieId())
                 .orElseGet(WatchedMovie::new);
 
         entity.setUserId(userId);
@@ -38,6 +40,8 @@ public class WatchedMovieService {
 
     // 평점 수정
     public WatchedMovieResponse updateRating(String userId, Integer movieId, Double rating) {
+    	validateRating(rating);
+        
         WatchedMovie entity = repository.findByUserIdAndMovieId(userId, movieId)
                 .orElseThrow(() -> new IllegalArgumentException("시청 기록이 없습니다."));
         entity.setRating(rating);
@@ -49,5 +53,11 @@ public class WatchedMovieService {
         WatchedMovie entity = repository.findByUserIdAndMovieId(userId, movieId)
                 .orElseThrow(() -> new IllegalArgumentException("시청 기록이 없습니다."));
         repository.delete(entity);
+    }
+    
+    private void validateRating(Double rating) {
+        if (rating != null && (rating < 0 || rating > 5)) {
+            throw new IllegalArgumentException("평점은 0~5 사이여야 합니다.");
+        }
     }
 }

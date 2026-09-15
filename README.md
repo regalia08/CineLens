@@ -14,6 +14,26 @@ MCP(Model Context Protocol) 서버를 통해 Claude 등 LLM 클라이언트에�
 
 웹앱 자체에도 채팅 페이지를 두어, Gemini API(Function Calling)를 통해 로그인 없이 바로 자연어로 시청 기록 조회·추천·검색을 요청할 수 있습니다. LLM 프로바이더를 교체할 수 있도록 `LlmService` 인터페이스로 추상화했습니다.
 
+## 스크린샷
+
+| 홈 (장르 필터, 본 영화 별점 표시) | 검색 |
+|---|---|
+| ![홈](./screenshots/01-home.png) | ![검색](./screenshots/02-search.png) |
+
+| 마이페이지 (6종 정렬) | 영화 상세 |
+|---|---|
+| ![마이페이지](./screenshots/03-mypage.png) | ![상세](./screenshots/04-detail.png) |
+
+| 추천 페이지 | AI 채팅 — 시청 기록 조회 |
+|---|---|
+| ![추천](./screenshots/05-recommend.png) | ![채팅 조회](./screenshots/06-chat-list.png) |
+
+**AI 채팅 — 자연어로 평점 수정 + 줄임말 검색 후 등록**
+
+영화 제목을 정확히 몰라도("가오갤2") Gemini가 TMDB에서 정확한 작품(가디언즈 오브 갤럭시 Vol. 2)을 찾아 시청 기록에 등록합니다.
+
+![채팅 수정/등록](./screenshots/07-chat-update.png)
+
 ## 기술 스택
 
 | 구분 | 기술 |
