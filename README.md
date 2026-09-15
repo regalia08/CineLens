@@ -171,7 +171,7 @@ Tailwind CSS로 넷플릭스 스타일(다크 배경 + 포스터 중심)의 일�
 |---|---|---|---|
 | POST | `/api/watched-movies` | 시청 기록 등록 (또는 평점 갱신) | ✅ 완료 |
 | GET | `/api/watched-movies` | 내가 본 영화 목록 조회 | ✅ 완료 |
-| PUT | `/api/watched-movies/{movieId}` | 평점 수정 (현재는 POST 재호출로 처리) | — |
+| PUT | `/api/watched-movies/{movieId}` | 평점 수정 | ⚠️ 미사용 (웹 UI/챗봇은 POST 재호출로 수정 처리, 엔드포인트만 구현됨) |
 | DELETE | `/api/watched-movies/{movieId}` | 시청 기록 삭제 | ✅ 완료 |
 
 ### 추천 (`/api/recommendations`)
