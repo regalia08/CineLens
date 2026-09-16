@@ -30,7 +30,7 @@ function MovieDetailPage() {
   }, [params.id]);
 
   async function addView() {
-    const result = await apiRequest('/api/watched-movies', {
+    await apiRequest('/api/watched-movies', {
       method: 'POST',
       body: JSON.stringify({
         movieId: parseInt(params.id ?? '0'),
@@ -45,7 +45,7 @@ function MovieDetailPage() {
   useEffect(() => {
     async function checkExisting() {
       const watchedList = await apiRequest('/api/watched-movies');
-      const existing = watchedList.find((item) => item.movieId === parseInt(params.id ?? '0'));
+      const existing = watchedList.find((item: any) => item.movieId === parseInt(params.id ?? '0'));
       if (existing) {
         setRating(existing.rating);
         setSavedRating(existing.rating);
@@ -54,10 +54,6 @@ function MovieDetailPage() {
     checkExisting();
   }, [params.id]);
 
-  const searchTxt = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRating(parseFloat(event.target.value));
-    //console.log(event.target.value);
-  };
 
   return (
     <div>

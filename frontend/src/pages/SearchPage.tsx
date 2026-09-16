@@ -43,9 +43,9 @@ function SearchPage() {
       });
   }
 
-  const searchResult = (event: React.MouseEvent<HTMLButtonElement>) => {
-    runSearch(strSearch);
-  }
+  const searchResult = () => {
+  runSearch(strSearch);
+}
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {

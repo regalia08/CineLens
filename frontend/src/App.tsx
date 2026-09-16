@@ -19,7 +19,7 @@ function App() {
   return (
     <div className="min-h-screen bg-black text-white">
       <nav className="max-w-6xl mx-auto flex items-center gap-6 px-8 py-4">
-        <span className="text-red-600 text-2xl font-bold mr-4">CineLens</span>
+        <Link to="/" className="text-red-600 text-2xl font-bold mr-4">CineLens</Link>
         <ul className="flex flex-wrap gap-2">
           <li><Link to="/" className={linkClass('/')}>홈</Link></li>
           <li><Link to="/search" className={linkClass('/search')}>검색</Link></li>

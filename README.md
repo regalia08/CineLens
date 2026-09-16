@@ -38,6 +38,18 @@ MCP(Model Context Protocol) 서버를 통해 Claude 등 LLM 클라이언트에�
 
 ![채팅 수정/등록](./screenshots/07-chat-update.png)
 
+**AI 채팅 — 척도가 다른 평점 요청도 알아서 환산**
+
+"인터스텔라 9점으로 등록해줘"처럼 10점 만점 기준으로 말해도, 도구 설명(0~5점 척도)을 참고해 Gemini가 스스로 4.5점으로 환산해 등록하고, 환산 근거까지 답변에 포함합니다.
+
+![평점 자동 환산](./screenshots/09-chat-rating-conversion.png)
+
+**MCP(Claude Desktop) — 잘못된 입력값 검증**
+
+평점 검증을 컨트롤러가 아닌 Service 레벨에 둔 덕분에, 웹 UI뿐 아니라 MCP를 통한 요청도 동일하게 걸러집니다. 8점처럼 범위를 벗어난 값을 요청하면 Claude가 실패 결과를 해석해 자연스럽게 되묻습니다.
+
+![MCP 평점 검증](./screenshots/08-mcp-validation.png)
+
 ## 기술 스택
 
 | 구분 | 기술 |
@@ -143,8 +155,8 @@ Tailwind CSS로 넷플릭스 스타일(다크 배경 + 포스터 중심)의 일�
 - [x] 내가 본 영화 목록 (마이페이지 — 포스터 그리드, 클릭 시 상세 이동)
 - [x] 시청 기록 평점 수정 (상세 페이지 진입 시 기존 평점 자동 로드)
 - [x] 시청 기록 삭제 (마이페이지, 확인창 포함)
-- [x] 정렬 (마이페이지 — 평점 오름차순/내림차순)
-- [x] 장르 필터 (홈 — 체크박스, TMDB 장르 목록 API 연동)
+- [x] 정렬 (마이페이지 — 평점/최신순/이름순 각 오름·내림차순, 현재 정렬 상태 표시)
+- [x] 장르 필터 (홈 — 칩 UI, TMDB 장르 목록 API 연동)
 - [x] 추천 결과 UI (추천 페이지 — 로딩/빈 상태 처리, 추천 이유 표시)
 - [x] 인앱 채팅 UI (`/chat` — 대화 기록 렌더링, 전송/엔터 처리, localStorage 저장, 자동 스크롤)
 - [x] Tailwind CSS 스타일링 (전 페이지 — 넷플릭스 스타일 다크 테마, 반응형 그리드)
@@ -160,14 +172,15 @@ Tailwind CSS로 넷플릭스 스타일(다크 배경 + 포스터 중심)의 일�
 - [x] 취향 분석 로직 (선호 장르/감독 분석, 시청기록 가중 평균 기반)
 - [x] 추천 로직 (가중치 기반 점수 계산 — 장르 40%+감독 30%+평점 20%+유사도 10%, 2단계 계산으로 TMDB 호출 최적화)
 - [x] 인앱 챗봇 (`LlmService` 인터페이스 + `GeminiService`, Function Calling 에이전틱 루프, `/api/chat`)
+- [x] 평점 유효성 검증 (0~5 범위, Service 레벨 — 웹 UI/챗봇/MCP 등 모든 경로에서 동일하게 적용)
 - [ ] TMDB 프록시 API (현재 프론트는 TMDB 직접 호출 중, 추천/챗봇 API는 백엔드 경유로 구현됨)
 
 ### 확장 (선택)
 - [x] MCP 연동 (조회 4개 + CRUD 3개 도구, Claude Desktop 연결 확인)
 - [x] 인앱 자연어 추천 챗봇 (Gemini Function Calling)
+- [x] Docker 구성 (Dockerfile 2개 + docker-compose, MySQL 시드 데이터 자동화)
 - [ ] 취향 분석 차트
 - [ ] 멀티 LLM 프로바이더 추가 (Claude 등, `LlmService` 구현체 확장)
-- [ ] Docker 구성 (마감 이후 별도 작업 예정)
 
 ## API
 
@@ -207,14 +220,72 @@ Tailwind CSS로 넷플릭스 스타일(다크 배경 + 포스터 중심)의 일�
 | 9/14 | 버그 점검 (존재하지 않는 영화 등록 방지, 챗봇 race condition, API 실패 처리, 429 대응) | 완료 |
 | 9/14 | Tailwind 스타일링 (전 페이지, MovieCard/StarRating 컴포넌트 분리) | 완료 |
 | 9/15 | 세부 점검 (시드 데이터 확장, 챗봇 CRUD 도구 추가, 상세페이지 UI 개선, 반응형, 로딩 스피너 통일) | 완료 |
-| 9/16 ~ 9/17 | README 정리 | 예정 |
-| 9/18 | 최종 점검, 마감 | 예정 |
+| 9/16 | Docker 구성 (Dockerfile, docker-compose, CORS/SPA 라우팅 대응, MySQL 시드 자동화), README 최종 정리 | 완료 |
 
-**최종 마감: 2026년 9월 18일**
+**개발 완료: 2026년 9월 16일** (제출 마감 9/18보다 앞당겨 완료)
 
 ## 로컬 실행 방법
 
-### Backend
+### Docker로 실행 (가장 간단, 추천)
+
+**1. 필요한 것**
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) 설치
+- 이 저장소 clone
+  ```bash
+  git clone https://github.com/본인아이디/CineLens.git
+  cd CineLens
+  ```
+
+**2. 최상위 폴더에 `.env` 파일 생성**
+
+`docker-compose.yml`과 같은 위치(`CineLens/.env`)에 아래 내용으로 생성합니다.
+
+```
+MYSQL_ROOT_PASSWORD=원하는_비밀번호
+TMDB_API_KEY=본인의_TMDB_API_키
+GEMINI_API_KEY=본인의_Gemini_API_키
+```
+
+- TMDB API 키: [themoviedb.org](https://www.themoviedb.org)에서 무료 발급
+- Gemini API 키: [Google AI Studio](https://aistudio.google.com)에서 무료 발급 (카드 등록 불필요)
+
+**3. 실행**
+
+```bash
+docker-compose up --build
+```
+
+프론트(nginx), 백엔드(Spring Boot), MySQL 3개 컨테이너가 함께 빌드·실행됩니다. MySQL은 처음 실행 시 `backend/init.sql`을 통해 데모용 시청 기록 17편을 자동으로 시드합니다.
+
+**4. 접속**
+
+```
+http://localhost:3000
+```
+
+**5. 데모 데이터 확인하기**
+
+시드 데이터는 고정된 데모 계정(UUID)으로 등록되어 있는데, 브라우저가 처음 접속하면 자체적으로 새 UUID를 생성하기 때문에 그대로는 빈 상태로 보입니다. 데모 데이터를 보려면 개발자도구(F12) → Console 탭에서 아래 명령어를 실행한 뒤 새로고침하세요.
+
+> 콘솔에 처음 붙여넣을 때 브라우저 보안 경고가 뜰 수 있습니다. `allow pasting`을 입력하고 엔터를 누른 뒤 다시 명령어를 실행해주세요.
+
+```js
+localStorage.setItem('UserID', 'ff74d04c-876b-4b2e-87dc-df9d5ffbc634');
+```
+
+**6. 종료 및 재시작**
+
+```bash
+docker-compose down        # 데이터 유지, 컨테이너만 종료
+docker-compose down -v     # 데이터까지 초기화 (다음 실행 시 시드 데이터 재삽입)
+docker-compose up --build  # 코드 수정 후 재빌드
+```
+
+### 수동 실행 (개발용)
+
+Docker 없이 직접 개발 서버를 띄우고 싶을 때 사용합니다.
+
+#### Backend
 
 1. MySQL에 스키마 생성
    ```sql
@@ -229,7 +300,7 @@ Tailwind CSS로 넷플릭스 스타일(다크 배경 + 포스터 중심)의 일�
    ```
 3. 프로젝트 실행 (Spring Boot 서버는 `8080` 포트에서 구동)
 
-### Frontend
+#### Frontend
 
 1. `frontend/.env` 생성 후 TMDB API 키 설정
    ```
@@ -243,7 +314,7 @@ Tailwind CSS로 넷플릭스 스타일(다크 배경 + 포스터 중심)의 일�
    ```
 3. `http://localhost:5173` 접속
 
-### MCP 서버 (선택)
+#### MCP 서버 (선택)
 
 1. 가상환경 세팅 및 라이브러리 설치
    ```bash

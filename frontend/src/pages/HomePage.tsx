@@ -9,7 +9,7 @@ const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const API_URL = 'https://api.themoviedb.org/3/movie/';
 
 function HomePage() {
-  const [Movies, setMovies] = useState([]); // 빈배열 저장해두기
+  const [Movies, setMovies] = useState<any[]>([]); // 빈배열 저장해두기
   const [genres, setGenres] = useState<any[]>([]);
   const [chkGenres, setChkGenres] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -61,7 +61,7 @@ function HomePage() {
 
   const filteredMovies = Movies.filter((movie) => {
     if (chkGenres.length === 0) return true; // 선택 없으면 전체 보여줌
-    return movie.genre_ids.some((id) =>
+    return movie.genre_ids.some((id: any) =>
       chkGenres.includes(id)
     );
   });

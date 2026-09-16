@@ -21,7 +21,7 @@ function MyPage() {
     const watchedList = await apiRequest('/api/watched-movies');
 
     const mergedList = await Promise.all(
-      watchedList.map(async (item) => {
+      watchedList.map(async (item: any) => {
         const tmdbData = await fetch(`${API_URL}/${item.movieId}?api_key=${API_KEY}&language=ko-KR`)
           .then((res) => res.json());
         return { ...tmdbData, rating: item.rating, watchedAt: item.watchedAt };
@@ -37,7 +37,7 @@ function MyPage() {
     if (!isConfirmed) {
       return;
     }
-    const result = await apiRequest(`/api/watched-movies/${movieId}`, {
+    await apiRequest(`/api/watched-movies/${movieId}`, {
       method: 'DELETE'
     });
     location.reload();
@@ -88,6 +88,14 @@ function MyPage() {
     );
   }
 
+  if (moviList.length === 0) {
+    return (
+      <div className="text-center text-zinc-400 mt-20">
+        아직 시청 기록이 없어요. 영화를 검색해서 "봤어요"를 등록해보세요!
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center flex-wrap gap-2 mb-6">
@@ -113,7 +121,7 @@ function MyPage() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-        {moviList.map((movie) => (
+        {moviList.map((movie: any) => (
           <MovieCard
             key={movie.id}
             movieId={movie.id}
