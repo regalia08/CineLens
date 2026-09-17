@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 import requests
 from mcp.server.fastmcp import FastMCP
+import sys
 
 load_dotenv()
 
@@ -20,7 +21,11 @@ def _headers():
 @mcp.tool()
 def get_watched_movies() -> list:
     """사용자가 시청하고 평점을 남긴 영화 목록을 조회합니다."""
+    print(f"[DEBUG] URL: {BACKEND_URL}/api/watched-movies", file=sys.stderr)
+    print(f"[DEBUG] Headers: {_headers()}", file=sys.stderr)
     res = requests.get(f"{BACKEND_URL}/api/watched-movies", headers=_headers())
+    print(f"[DEBUG] Status: {res.status_code}", file=sys.stderr)
+    print(f"[DEBUG] Body: {res.text}", file=sys.stderr)
     res.raise_for_status()
     return res.json()
 
@@ -92,6 +97,8 @@ def get_popular_movies(limit: int = 5) -> list:
     res.raise_for_status()
     results = res.json().get("results", [])
     return results[:limit]
+
+
 
 
 if __name__ == "__main__":

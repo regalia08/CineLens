@@ -236,15 +236,23 @@ Tailwind CSS로 넷플릭스 스타일(다크 배경 + 포스터 중심)의 일�
   cd CineLens
   ```
 
-**2. 최상위 폴더에 `.env` 파일 생성**
+**2. `.env` 파일 2개 생성**
 
-`docker-compose.yml`과 같은 위치(`CineLens/.env`)에 아래 내용으로 생성합니다.
+Docker Compose는 백엔드에 넘길 환경변수를 최상위 `.env`에서 읽고, 프론트엔드(Vite)는 빌드 시점에 `frontend/.env`의 값을 코드에 직접 포함시키므로 두 파일을 각각 만들어야 합니다.
 
+`CineLens/.env` (docker-compose.yml과 같은 위치):
 ```
 MYSQL_ROOT_PASSWORD=원하는_비밀번호
 TMDB_API_KEY=본인의_TMDB_API_키
 GEMINI_API_KEY=본인의_Gemini_API_키
 ```
+
+`CineLens/frontend/.env`:
+```
+VITE_TMDB_API_KEY=본인의_TMDB_API_키
+```
+
+(TMDB 키는 위 두 파일에 동일한 값을 넣습니다.)
 
 - TMDB API 키: [themoviedb.org](https://www.themoviedb.org)에서 무료 발급
 - Gemini API 키: [Google AI Studio](https://aistudio.google.com)에서 무료 발급 (카드 등록 불필요)
