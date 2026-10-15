@@ -16,7 +16,7 @@ MCP(Model Context Protocol) 서버를 통해 Claude 등 LLM 클라이언트에�
 
 ## 개발 배경
 
-프론트엔드 개발 및 QA 엔지니어링 실무 경험을 바탕으로, TypeScript와 React Hooks 기반의 모던 프론트엔드 개발 방식을 이 프로젝트를 통해 집중적으로 학습하고 적용했습니다. Spring Boot 백엔드는 기존 실무 경험(Project Regalia)을 활용해 빠르게 설계했으며, 프론트엔드는 상태 관리, 비동기 처리, 컴포넌트 재사용 패턴을 프로젝트 진행과 함께 심화했습니다.
+프론트엔드 개발 및 QA 엔지니어링 실무 경험을 바탕으로, TypeScript와 React Hooks 기반의 모던 프론트엔드 개발 방식을 이 프로젝트를 통해 집중적으로 학습하고 적용했습니다. Spring Boot 백엔드는 앞서 진행한 개인 프로젝트(Project Regalia)의 경험을 활용해 빠르게 설계했으며, 프론트엔드는 상태 관리, 비동기 처리, 컴포넌트 재사용 패턴을 프로젝트 진행과 함께 심화했습니다.
 
 ## 스크린샷
 
@@ -46,7 +46,7 @@ MCP(Model Context Protocol) 서버를 통해 Claude 등 LLM 클라이언트에�
 
 **MCP(Claude Desktop) — 잘못된 입력값 검증**
 
-평점 검증을 컨트롤러가 아닌 Service 레벨에 둔 덕분에, 웹 UI뿐 아니라 MCP를 통한 요청도 동일하게 걸러집니다. 8점처럼 범위를 벗어난 값을 요청하면 Claude가 실패 결과를 해석해 자연스럽게 되묻습니다.
+평점 검증은 DTO(`@Valid`)와 Service 두 단계로 적용됩니다. 웹 UI와 MCP(REST 호출) 요청은 컨트롤러 단계에서 먼저 걸러지고, 앱 내 챗봇(Service 직접 호출)은 Service 단계 검증이 막아줍니다. 8점처럼 범위를 벗어난 값을 요청하면 Claude가 실패 결과를 해석해 자연스럽게 되묻습니다.
 
 ![MCP 평점 검증](./screenshots/08-mcp-validation.png)
 
@@ -118,7 +118,7 @@ CineLens/
 
 현재는 테스트용 고정 UUID를 사용하며, 추후 호출 시점에 사용자 UUID를 파라미터로 받는 방식으로 확장 가능합니다.
 
-**검증 로직이 MCP 경로에서도 동작함을 확인** — 평점 유효성 검증(0~5 범위)을 컨트롤러가 아니라 Service 레벨에 둔 덕분에, 웹 UI뿐 아니라 MCP를 통한 요청도 동일하게 걸러집니다. Claude Desktop에 "포레스트 검프 8점으로 수정해줘"라고 요청하면, 백엔드가 거부한 결과를 Claude가 해석해 자연스럽게 되묻습니다.
+**검증 로직이 MCP 경로에서도 동작함을 확인** — 평점 유효성 검증(0~5 범위)은 DTO(`@Valid`)와 Service(`validateRating`) 두 단계로 적용됩니다. 웹 UI와 MCP(REST 호출) 요청은 컨트롤러에서 400으로 먼저 걸러지고, 컨트롤러를 거치지 않는 챗봇 경로는 Service 검증이 방어합니다. Claude Desktop에 "포레스트 검프 8점으로 수정해줘"라고 요청하면, 백엔드가 거부한 결과를 Claude가 해석해 자연스럽게 되묻습니다.
 
 ![MCP 평점 검증](./screenshots/08-mcp-validation.png)
 
@@ -172,7 +172,7 @@ Tailwind CSS로 넷플릭스 스타일(다크 배경 + 포스터 중심)의 일�
 - [x] 취향 분석 로직 (선호 장르/감독 분석, 시청기록 가중 평균 기반)
 - [x] 추천 로직 (가중치 기반 점수 계산 — 장르 40%+감독 30%+평점 20%+유사도 10%, 2단계 계산으로 TMDB 호출 최적화)
 - [x] 인앱 챗봇 (`LlmService` 인터페이스 + `GeminiService`, Function Calling 에이전틱 루프, `/api/chat`)
-- [x] 평점 유효성 검증 (0~5 범위, Service 레벨 — 웹 UI/챗봇/MCP 등 모든 경로에서 동일하게 적용)
+- [x] 평점 유효성 검증 (0~5 범위, DTO `@Valid` + Service 이중 검증 — 웹 UI/챗봇/MCP 경로 모두 적용)
 - [ ] TMDB 프록시 API (현재 프론트는 TMDB 직접 호출 중, 추천/챗봇 API는 백엔드 경유로 구현됨)
 
 ### 확장 (선택)
@@ -329,9 +329,9 @@ Docker 없이 직접 개발 서버를 띄우고 싶을 때 사용합니다.
    cd mcp-server
    python -m venv venv
    venv\Scripts\activate
-   pip install "mcp<2" requests
+   pip install "mcp<2" requests python-dotenv
    ```
-2. `server.py` 상단의 `TMDB_API_KEY`, `TEST_USER_ID`를 실제 값으로 설정
+2. `mcp-server/.env` 파일을 만들어 `TMDB_API_KEY`, `TEST_USER_ID`를 실제 값으로 설정
 3. Claude Desktop 설정 파일(`claude_desktop_config.json`)의 `mcpServers`에 아래 항목 추가 후 재시작
    ```json
    "cinelens": {
